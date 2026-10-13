@@ -1,0 +1,505 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>DEWA Substation Checklist</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Layout: one reading column; each checklist group carries its own 3D drawing, cut away like a substation model. */
+:root{
+  --bg:#F4F6F5;--card:#FFFFFF;--ink:#17262B;--mute:#5B6B70;--line:#D5DDDC;
+  --teal:#13808A;--teal-soft:#E1F1F2;--amber:#B26A00;--amber-soft:#FFF1D6;--done:#8A9A9E;
+  /* 3D drawing materials */
+  --stage:#F1F4F3;--m-ground:#C9D1CD;--m-floor:#E4E9E6;--m-wall:#DCE2DF;--m-trench:#A3B2B3;--m-cut:#2C4A52;--m-cutg:#8E9C99;
+  --m-pad:#C2CBC7;--m-tx:#6E929B;--m-fin:#87A6AD;--m-bush:#B9772A;--m-door:#B4BFC2;--m-grill:#93A4A8;--m-roof:#D3DAD7;
+  --m-panel:#C3CCCE;--m-ramp:#D2D8D4;--m-shade:#22363C;--edge:#2F4349;
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0F1A1D;--card:#17262B;--ink:#E8EFEF;--mute:#93A5A9;--line:#2B3F45;
+  --teal:#4FC3CE;--teal-soft:#16363B;--amber:#F2B04C;--amber-soft:#3A2D12;--done:#6C8085;
+  --stage:#132024;--m-ground:#263A3F;--m-floor:#364B51;--m-wall:#465B61;--m-trench:#1D2D32;--m-cut:#8FB0B6;--m-cutg:#56696C;
+  --m-pad:#52696F;--m-tx:#6C97A1;--m-fin:#7FA8B1;--m-bush:#D69A45;--m-door:#8CA2A8;--m-grill:#6E858B;--m-roof:#3E5359;
+  --m-panel:#5D757B;--m-ramp:#30454A;--m-shade:#0A1417;--edge:#0C181B;color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0F1A1D;--card:#17262B;--ink:#E8EFEF;--mute:#93A5A9;--line:#2B3F45;
+  --teal:#4FC3CE;--teal-soft:#16363B;--amber:#F2B04C;--amber-soft:#3A2D12;--done:#6C8085;
+  --stage:#132024;--m-ground:#263A3F;--m-floor:#364B51;--m-wall:#465B61;--m-trench:#1D2D32;--m-cut:#8FB0B6;--m-cutg:#56696C;
+  --m-pad:#52696F;--m-tx:#6C97A1;--m-fin:#7FA8B1;--m-bush:#D69A45;--m-door:#8CA2A8;--m-grill:#6E858B;--m-roof:#3E5359;
+  --m-panel:#5D757B;--m-ramp:#30454A;--m-shade:#0A1417;--edge:#0C181B;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.5 "IBM Plex Sans",system-ui,sans-serif}
+.wrap{max-width:860px;margin:0 auto;padding-block:28px 80px;padding-inline:18px}
+h1{font:800 clamp(28px,6vw,42px)/1.05 "Archivo",system-ui,sans-serif;margin:0 0 8px;letter-spacing:-.01em;text-wrap:balance}
+.sub{color:var(--mute);margin:0 0 22px;max-width:60ch}
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding:10px 0 12px;border-bottom:1px solid var(--line);margin-bottom:6px}
+.tabs{display:flex;gap:6px;flex-wrap:wrap}
+.tab{font:600 15px "IBM Plex Sans",system-ui,sans-serif;padding:9px 14px;border:1.5px solid var(--line);background:var(--card);color:var(--ink);border-radius:8px;cursor:pointer}
+.tab[aria-selected="true"]{background:var(--teal);border-color:var(--teal);color:#fff}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .tab[aria-selected="true"]{color:#07191C}}
+:root[data-theme="dark"] .tab[aria-selected="true"]{color:#07191C}
+.tab:focus-visible,.row:focus-within,.btn:focus-visible,.stage:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+.prog{display:flex;align-items:center;gap:12px;margin-top:10px;font-size:14px;color:var(--mute)}
+.meter{flex:1;height:8px;background:var(--line);border-radius:4px;overflow:hidden}
+.meter i{display:block;height:100%;width:0;background:var(--teal);transition:width .25s}
+.btns{display:flex;gap:8px;margin-left:auto}
+.btn{font:500 13px "IBM Plex Sans",system-ui,sans-serif;padding:6px 10px;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:6px;cursor:pointer}
+h2{font:700 21px "Archivo",system-ui,sans-serif;margin:30px 0 4px}
+.note{font-size:14px;color:var(--mute);margin:0 0 10px}
+.group{background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.row{display:grid;grid-template-columns:28px 1fr auto;gap:12px;align-items:start;padding:13px 14px;border-top:1px solid var(--line);cursor:pointer}
+.row:first-child{border-top:0}
+.row input{width:20px;height:20px;margin:2px 0 0;accent-color:var(--teal)}
+.row b{font-weight:600;color:var(--teal);background:var(--teal-soft);padding:0 5px;border-radius:4px}
+.row.done .t{color:var(--done);text-decoration:line-through;text-decoration-color:var(--line)}
+.row.done b{color:var(--done);background:transparent}
+.cl{font-size:13px;color:var(--mute);white-space:nowrap;padding-top:2px}
+
+/* 3D drawings */
+.fig3{margin:12px 0 12px;background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.fh{display:flex;align-items:center;gap:6px 12px;flex-wrap:wrap;padding:10px 14px}
+.ft{font:700 15px "Archivo",system-ui,sans-serif}
+.hint{font-size:12.5px;color:var(--mute);margin-left:auto}
+.stage{background:var(--stage);border-block:1px solid var(--line);cursor:grab;touch-action:pan-y;-webkit-user-select:none;user-select:none}
+.stage:active{cursor:grabbing}
+.stage svg{display:block;width:100%}
+.fig3 figcaption{padding:9px 14px 11px;font-size:13.5px;color:var(--mute)}
+.f{fill:var(--c);fill:color-mix(in srgb,var(--c) var(--k),var(--m-shade));stroke:var(--c);stroke:color-mix(in srgb,var(--c) var(--k),var(--m-shade));stroke-width:.9;stroke-linejoin:round}
+.f.e{stroke:var(--edge);stroke-width:.7}
+.m-ground{--c:var(--m-ground)}.m-floor{--c:var(--m-floor)}.m-wall{--c:var(--m-wall)}.m-trench{--c:var(--m-trench)}
+.m-cut{--c:var(--m-cut)}.m-cutg{--c:var(--m-cutg)}.m-pad{--c:var(--m-pad)}.m-tx{--c:var(--m-tx)}.m-fin{--c:var(--m-fin)}
+.m-bush{--c:var(--m-bush)}.m-door{--c:var(--m-door)}.m-grill{--c:var(--m-grill)}.m-roof{--c:var(--m-roof)}
+.m-panel{--c:var(--m-panel)}.m-ramp{--c:var(--m-ramp)}
+.dl{fill:none;stroke:var(--edge);stroke-width:.6;opacity:.55}
+.dm{fill:none;stroke:var(--amber);stroke-width:1.4}
+.dx{fill:none;stroke:var(--amber);stroke-width:.8;opacity:.85}
+.dt{fill:var(--amber)}
+.gh{fill:none;stroke:var(--teal);stroke-width:1.4;stroke-dasharray:6 4}
+.sw{fill:none;stroke:var(--amber);stroke-width:1.2;stroke-dasharray:4 4}
+.cn{fill:none;stroke:var(--teal);stroke-width:1.2;stroke-dasharray:9 4 2 4}
+.ld{fill:none;stroke:var(--mute);stroke-width:.9}
+.lp{fill:var(--mute)}
+.lb{font:600 12.5px "IBM Plex Sans",system-ui,sans-serif;fill:var(--ink);paint-order:stroke;stroke:var(--stage);stroke-width:4px;stroke-linejoin:round}
+.lb.rn{font:700 11.5px "Archivo",system-ui,sans-serif;letter-spacing:.06em;fill:var(--mute)}
+
+.also{margin-top:34px;padding:10px 14px;background:var(--amber-soft);color:var(--ink);border-left:4px solid var(--amber);border-radius:4px;font-size:14px}
+table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:15px}
+th,td{text-align:left;padding:9px 14px;border-top:1px solid var(--line)}
+th{background:var(--teal);color:#fff;border-top:0;font-weight:600}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) th{color:#07191C}}
+:root[data-theme="dark"] th{color:#07191C}
+.scroll{overflow-x:auto}
+.look{display:flex;flex-wrap:wrap;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:12px}
+.look label{font-weight:600}
+select{font:500 16px "IBM Plex Sans",system-ui,sans-serif;padding:8px 10px;border:1.5px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);max-width:100%}
+select:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+.res{font:800 28px "Archivo",system-ui,sans-serif;color:var(--teal);margin-left:auto}
+tr.hit td{background:var(--teal-soft);font-weight:600}
+footer{margin-top:36px;font-size:13px;color:var(--mute)}
+@media (max-width:520px){.row{grid-template-columns:28px 1fr}.cl{grid-column:2;padding-top:0}.hint{margin-left:0}}
+@media (prefers-reduced-motion:reduce){.meter i{transition:none}}
+@media print{.bar .tabs,.btns,.hint,.fh .btn{display:none}.bar{position:static}body{background:#fff}.fig3,.group{break-inside:avoid}}
+</style>
+
+<div class="wrap">
+  <h1>DEWA substation / transformer room checklist</h1>
+  <p class="sub">Space program requirements for DEWA substations, from the Dubai Building Code 2021, Part G.7. Choose the substation type, tick items as you check the design. Each item shows its clause or table number, and each group has a 3D drawing you can drag to turn.</p>
+
+  <div class="bar">
+    <div class="tabs" role="tablist" id="tabs"></div>
+    <div class="prog"><span id="count">0 / 0</span><div class="meter"><i id="fill"></i></div>
+      <div class="btns"><button class="btn" id="reset">Clear ticks</button></div></div>
+  </div>
+
+  <div id="list"></div>
+
+  <h2>Quick reference</h2>
+  <div class="scroll"><table>
+    <tr><th>Item</th><th>Value</th></tr>
+    <tr><td>Single room, 1 × 1,000/1,500 kVA</td><td>33 m², min. width 4.57 m</td></tr>
+    <tr><td>Single room, 2 × 1,000/1,500 kVA</td><td>55 m², min. width 6.1 m (+25 m² each extra)</td></tr>
+    <tr><td>RMU room (split / basement)</td><td>9 m², min. width 3 m (+7 m² per extra RMU set)</td></tr>
+    <tr><td>Transformer room, basement</td><td>21 m² / 4.57 m (2 transformers: 42 m² / 6.1 m)</td></tr>
+    <tr><td>Clear height</td><td>3.7 m single room; 3.0 m RMU room and basement transformer room</td></tr>
+    <tr><td>Floor level vs adjacent ground</td><td>+150 to +300 mm (ground floor); +75 to +150 mm (basement transformer room)</td></tr>
+    <tr><td>Louvred doors</td><td>Transformer room 3.05 × 2.75 m; RMU room 2.44 or 3.05 × 2.75 m</td></tr>
+    <tr><td>Basement ventilation grill</td><td>≥ 14.9 m² (1,000 kVA) / 18.6 m² (1,500 kVA); room max 55 °C at 48 °C outside</td></tr>
+    <tr><td>Open-to-sky private panel</td><td>6.1 × 6.1 m</td></tr>
+    <tr><td>Pocket substation</td><td>4.57 × 3.66 m (1 × 1,000 kVA); 6.1 × 6.1 m (2 ×)</td></tr>
+    <tr><td>Substation earthing</td><td>&lt; 2.0 Ω (neutral and body, separate), 95 mm² Cu</td></tr>
+  </table></div>
+
+  <h2>BIM and design tips</h2>
+  <div class="group">
+    <div class="row" style="cursor:default"><span></span><span>Model the <b>room as a net clear area</b> (inside faces of walls) when checking the 33 / 55 / 9 / 21 m² areas.</span><span></span></div>
+    <div class="row" style="cursor:default"><span></span><span>Check the <b>clear height from the finished floor level</b> to the underside of the slab or beams, not from the structural slab.</span><span></span></div>
+    <div class="row" style="cursor:default"><span></span><span>Keep <b>wet areas, pipes and drains out of the room and out of the slab above</b>; if unavoidable use the attic slab detail (clause G.7.4).</span><span></span></div>
+  </div>
+
+  <footer>The 3D drawings show the checklist dimensions to scale for guidance only; room shape, equipment and trench routes are indicative. Areas and widths are minimums from the tables. Not every figure and table of Part G.7 is included (for example the ground-floor split transformer room table G.25 and the layout figures). Always verify against the full Dubai Building Code and DEWA requirements.</footer>
+</div>
+
+<script>
+/* ================= 3D drawings: small box modeller drawn as SVG ================= */
+var F3=(function(){
+var T=.25,FFL=.45,TRZ=-.45,GB=-.8,RAD=Math.PI/180;
+function B(x0,y0,z0,x1,y1,z1,m,o){var b={a:[x0,y0,z0],b:[x1,y1,z1],m:m},k;if(o)for(k in o)b[k]=o[k];return b}
+function add(p,o){return [p[0]+o[0],p[1]+o[1],p[2]+o[2]]}
+function mul(o,k){return [o[0]*k,o[1]*k,o[2]*k]}
+function cl(b){var c={},k;for(k in b)c[k]=b[k];c.a=b.a.slice();c.b=b.b.slice();return c}
+function uniq(a){a.sort(function(x,y){return x-y});return a.filter(function(v,i){return !i||v-a[i-1]>1e-6})}
+
+function doorDeco(d){var y=-T+.07,z0=FFL,z1=FFL+d.h,m=(d.x0+d.x1)/2,l=[[[m,y,z0],[m,y,z1]]],z;
+  if(d.kind==='louvre'){for(z=z0+.2;z<z1-.12;z+=.16){l.push([[d.x0+.1,y,z],[m-.07,y,z]]);l.push([[m+.07,y,z],[d.x1-.1,y,z]])}}
+  else{[[d.x0+.14,m-.1],[m+.1,d.x1-.14]].forEach(function(s){var a=z0+.16,b=z1-.16;
+    l.push([[s[0],y,a],[s[1],y,a]],[[s[1],y,a],[s[1],y,b]],[[s[1],y,b],[s[0],y,b]],[[s[0],y,b],[s[0],y,a]])})}
+  return [{n:[0,-1,0],l:l}]}
+function grillDeco(x0,x1,z0,z1){var y=-T-.03,l=[],v;
+  for(v=x0+.12;v<x1-.05;v+=.12)l.push([[v,y,z0],[v,y,z1]]);
+  for(v=z0+.11;v<z1-.05;v+=.11)l.push([[x0,y,v],[x1,y,v]]);
+  return [{n:[0,-1,0],l:l}]}
+function ramp(x0,x1,yf,yb){var L=Math.sqrt(FFL*FFL+(yb-yf)*(yb-yf));
+  return {a:[x0,yf,0],b:[x1,yb,FFL],m:'ramp',faces:[
+    {n:[0,-FFL/L,(yb-yf)/L],p:[[x0,yf,0],[x1,yf,0],[x1,yb,FFL],[x0,yb,FFL]]},
+    {n:[-1,0,0],p:[[x0,yf,0],[x0,yb,FFL],[x0,yb,0]]},
+    {n:[1,0,0],p:[[x1,yf,0],[x1,yb,0],[x1,yb,FFL]]}]}}
+/* transformer on its base: tank, lid, two radiator banks, HV and LV bushings */
+function tx(cx,cy,pw,pd){var z=FFL+.1,bw=.78,bd=.46,bh=1.25,o=[B(cx-pw/2,cy-pd/2,FFL,cx+pw/2,cy+pd/2,z,'pad',{e:1})];
+  o.push(B(cx-bw,cy-bd,z,cx+bw,cy+bd,z+bh,'tx',{e:1}));
+  o.push(B(cx-bw-.04,cy-bd-.04,z+bh,cx+bw+.04,cy+bd+.04,z+bh+.06,'tx',{e:1}));
+  [-1,1].forEach(function(s){var y0=s<0?cy-bd-.24:cy+bd,y1=y0+.24,yf=s<0?y0:y1,l=[],lt=[],x;
+    for(x=cx-.6;x<=cx+.601;x+=.12){l.push([[x,yf,z+.2],[x,yf,z+1.1]]);lt.push([[x,y0,z+1.1],[x,y1,z+1.1]])}
+    o.push(B(cx-.66,y0,z+.2,cx+.66,y1,z+1.1,'fin',{e:1,deco:[{n:[0,s,0],l:l},{n:[0,0,1],l:lt}]}))});
+  [-.42,0,.42].forEach(function(dx){o.push(B(cx+dx-.05,cy-.27,z+bh+.06,cx+dx+.05,cy-.17,z+bh+.4,'bush',{e:1}))});
+  [-.36,-.12,.12,.36].forEach(function(dx){o.push(B(cx+dx-.045,cy+.155,z+bh+.06,cx+dx+.045,cy+.245,z+bh+.22,'bush',{e:1}))});
+  return o}
+/* switchboard: a row of cubicles facing the door wall */
+function board(x0,y0,x1,y1,z0,h){var l=[],x,n=Math.max(1,Math.round((x1-x0)/.6)),w=(x1-x0)/n,i;
+  for(i=1;i<n;i++){x=x0+i*w;l.push([[x,y0,z0],[x,y0,z0+h]])}
+  for(i=0;i<n;i++){x=x0+i*w;l.push([[x+w*.25,y0,z0+h*.72],[x+w*.75,y0,z0+h*.72]])}
+  return [B(x0,y0,z0,x1,y1,z0+h,'panel',{e:1,deco:[{n:[0,-1,0],l:l}]})]}
+
+/* a row of rooms sharing party walls, doors on the road side (south wall) */
+function build(rooms,D,o){o=o||{};var H=o.H||3.5,top=FFL+H,obj=[],x=0,parts=[],ops=[],tr=o.trench||[],xs,ys,i,j,run,cur;
+  rooms.forEach(function(r,i){r.x0=x;r.x1=x+r.w;x=r.x1;if(i<rooms.length-1){parts.push([x,x+T]);x+=T}});
+  var X=x;
+  xs=[-T,X+T];ys=[-T,D+T];tr.forEach(function(t){xs.push(t[0],t[2]);ys.push(t[1],t[3])});xs=uniq(xs);ys=uniq(ys);
+  for(j=0;j<ys.length-1;j++){run=null;
+    for(i=0;i<xs.length-1;i++){(function(){var cx=(xs[i]+xs[i+1])/2,cy=(ys[j]+ys[j+1])/2;
+      var low=tr.some(function(t){return cx>t[0]&&cx<t[2]&&cy>t[1]&&cy<t[3]});
+      if(run&&run.low===low)run.b[0]=xs[i+1];
+      else{run=B(xs[i],ys[j],GB,xs[i+1],ys[j+1],low?TRZ:FFL,'floor',{st:1,low:low});if(low)run.fm={'z+':'trench'};obj.push(run)}})()}}
+  var gf=o.gf==null?2.5:o.gf,gb=.6,gx=.8;
+  obj.push(B(-T-gx,-T-gf,GB,X+T+gx,-T,0,'ground',{st:2}),B(-T-gx,D+T,GB,X+T+gx,D+T+gb,0,'ground',{st:2}),
+           B(-T-gx,-T,GB,-T,D+T,0,'ground',{st:2}),B(X+T,-T,GB,X+T+gx,D+T,0,'ground',{st:2}));
+  rooms.forEach(function(r){(r.doors||[]).forEach(function(d){ops.push({x0:r.x0+d.c-d.w/2,x1:r.x0+d.c+d.w/2,h:d.h,kind:d.kind,grill:d.grill,ramp:d.ramp!==false})})});
+  ops.sort(function(p,q){return p.x0-q.x0});
+  cur=-T;
+  ops.forEach(function(d){var g0=FFL+d.h+.3,g1=FFL+d.h+.75;
+    obj.push(B(cur,-T,FFL,d.x0,0,top,'wall',{w:'S',st:1}),B(d.x0,-T,FFL+d.h,d.x1,0,top,'wall',{w:'S',st:1}));cur=d.x1;
+    obj.push(B(d.x0,-T+.07,FFL,d.x1,-T+.13,FFL+d.h,'door',{on:'S',e:1,deco:doorDeco(d)}));
+    if(d.grill)obj.push(B(d.x0,-T-.03,g0,d.x1,-T,g1,'grill',{on:'S',e:1,deco:grillDeco(d.x0,d.x1,g0,g1)}));
+    });
+  obj.push(B(cur,-T,FFL,X+T,0,top,'wall',{w:'S',st:1}),B(-T,D,FFL,X+T,D+T,top,'wall',{w:'N',st:1}),
+           B(-T,0,FFL,0,D,top,'wall',{w:'W',st:1}),B(X,0,FFL,X+T,D,top,'wall',{w:'E',st:1}));
+  parts.forEach(function(p){obj.push(B(p[0],0,FFL,p[1],D,top,'wall',{w:'P',st:1}))});
+  obj.push(B(-T,-T,top,X+T,D+T,top+.25,'roof',{roof:1,st:1}));
+  rooms.forEach(function(r){if(r.it)obj=obj.concat(r.it(r.x0))});
+  return {obj:obj,X:X,D:D,top:top,ops:ops}}
+
+/* which boxes exist for this view and turn angle */
+function scene(M,v,yaw){var th=yaw*RAD,ph=v.pitch*RAD,d=[-Math.sin(th)*Math.cos(ph),-Math.cos(th)*Math.cos(ph),Math.sin(ph)];
+  var N={S:[0,-1],N:[0,1],W:[-1,0],E:[1,0]},cut={},k,out=[];
+  if(v.cut){for(k in N)cut[k]=N[k][0]*d[0]+N[k][1]*d[1]>.1;cut.P=true}
+  M.obj.forEach(function(b){var c=b;
+    if(b.roof&&!v.roof)return;
+    if(b.on&&cut[b.on])return;
+    if(b.w&&cut[b.w]){if(b.a[2]>=FFL+.35)return;c=cl(b);c.b[2]=FFL+.35;c.fm={'z+':'cut'};c.deco=null}
+    if(v.clipX!=null&&!c.faces){if(c.a[0]>=v.clipX-1e-6)return;
+      if(c.b[0]>v.clipX-1e-6&&c.st){c=cl(c);c.b[0]=v.clipX;var fm={},q;for(q in c.fm||{})fm[q]=c.fm[q];fm['x+']=c.st===2?'cutg':'cut';c.fm=fm}}
+    out.push(c)});
+  return {o:out,d:d,cut:cut,th:th,ph:ph}}
+
+/* back-to-front order: a box that lies wholly on the far side of another along x, y or z cannot hide it */
+function order(S){var o=S.o,d=S.d,n=o.length,e=.004,inn=[],adj=[],key=[],done=[],out=[],i,j,p,q,c,best;
+  function beh(A,Q){return (d[0]>0?A.b[0]<=Q.a[0]+e:A.a[0]>=Q.b[0]-e)||(d[1]>0?A.b[1]<=Q.a[1]+e:A.a[1]>=Q.b[1]-e)||A.b[2]<=Q.a[2]+e}
+  for(i=0;i<n;i++){inn[i]=0;adj[i]=[];done[i]=0;key[i]=((o[i].a[0]+o[i].b[0])*d[0]+(o[i].a[1]+o[i].b[1])*d[1]+(o[i].a[2]+o[i].b[2])*d[2])/2}
+  for(i=0;i<n;i++)for(j=i+1;j<n;j++){p=beh(o[i],o[j]);q=beh(o[j],o[i]);
+    if(p&&!q){adj[i].push(j);inn[j]++}else if(q&&!p){adj[j].push(i);inn[i]++}}
+  for(c=0;c<n;c++){best=-1;
+    for(i=0;i<n;i++)if(!done[i]&&inn[i]<=0&&(best<0||key[i]<key[best]))best=i;
+    if(best<0)for(i=0;i<n;i++)if(!done[i]&&(best<0||key[i]<key[best]))best=i;
+    done[best]=1;out.push(o[best]);adj[best].forEach(function(t){inn[t]--})}
+  return out}
+
+function faces(b,d){if(b.faces)return b.faces.filter(function(f){return f.n[0]*d[0]+f.n[1]*d[1]+f.n[2]*d[2]>1e-6});
+  var a=b.a,c=b.b,f=[],x,y;
+  if(c[1]-a[1]>1e-6&&c[2]-a[2]>1e-6&&Math.abs(d[0])>1e-6){x=d[0]>0?c[0]:a[0];
+    f.push({k:d[0]>0?'x+':'x-',n:[d[0]>0?1:-1,0,0],p:[[x,a[1],a[2]],[x,c[1],a[2]],[x,c[1],c[2]],[x,a[1],c[2]]]})}
+  if(c[0]-a[0]>1e-6&&c[2]-a[2]>1e-6&&Math.abs(d[1])>1e-6){y=d[1]>0?c[1]:a[1];
+    f.push({k:d[1]>0?'y+':'y-',n:[0,d[1]>0?1:-1,0],p:[[a[0],y,a[2]],[c[0],y,a[2]],[c[0],y,c[2]],[a[0],y,c[2]]]})}
+  if(c[0]-a[0]>1e-6&&c[1]-a[1]>1e-6)f.push({k:'z+',n:[0,0,1],p:[[a[0],a[1],c[2]],[c[0],a[1],c[2]],[c[0],c[1],c[2]],[a[0],c[1],c[2]]]});
+  return f}
+
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;')}
+function n1(v){return v.toFixed(1)}
+
+/* scale the drawing to the card width; the scale stays fixed while turning */
+function fit(F,Wpx){var v=F.v,pts=[],i,k,lo=[1e9,1e9,1e9],hi=[-1e9,-1e9,-1e9];
+  F.M.obj.forEach(function(b){if(b.roof&&!v.roof)return;if(v.clipX!=null&&b.a[0]>=v.clipX-1e-6)return;
+    var x1=v.clipX!=null?Math.min(b.b[0],v.clipX):b.b[0];
+    [b.a[0],x1].forEach(function(x){[b.a[1],b.b[1]].forEach(function(y){[b.a[2],b.b[2]].forEach(function(z){pts.push([x,y,z])})})})});
+  F.ann.forEach(function(a){var o=a.o||[0,0,0];['a','b'].forEach(function(q){if(a[q])pts.push(add(a[q],mul(o,1.15)))});
+    ['p','q'].forEach(function(q){if(a[q])pts.push(a[q])});(a.pts||[]).forEach(function(p){pts.push(p)})});
+  pts.forEach(function(p){for(k=0;k<3;k++){lo[k]=Math.min(lo[k],p[k]);hi[k]=Math.max(hi[k],p[k])}});
+  F.c=[(lo[0]+hi[0])/2,(lo[1]+hi[1])/2,(lo[2]+hi[2])/2];
+  var yaws=[],y,mx=0,y0=1e9,y1=-1e9,CP=Math.cos(v.pitch*RAD),SP=Math.sin(v.pitch*RAD);
+  if(v.wrap)for(y=0;y<360;y+=15)yaws.push(y);else for(i=0;i<=6;i++)yaws.push(v.min+(v.max-v.min)*i/6);
+  yaws.forEach(function(yw){var c=Math.cos(yw*RAD),s=Math.sin(yw*RAD);
+    pts.forEach(function(p){var dx=p[0]-F.c[0],dy=p[1]-F.c[1],dz=p[2]-F.c[2],X=dx*c-dy*s,Y=-(dz*CP+(dx*s+dy*c)*SP);
+      mx=Math.max(mx,Math.abs(X));y0=Math.min(y0,Y);y1=Math.max(y1,Y)})});
+  var padX=Wpx<520?40:64,padT=30,padB=30;
+  F.s=Math.min((Wpx-2*padX)/(2*mx),v.smax||66,(560-padT-padB)/(y1-y0));
+  F.W=Wpx;F.H=Math.ceil(F.s*(y1-y0)+padT+padB);F.ox=Wpx/2;F.oy=padT-F.s*y0}
+
+function draw(F){var S=scene(F.M,F.v,F.yaw),o=order(S),h='',lab='';
+  var c=Math.cos(S.th),sn=Math.sin(S.th),CP=Math.cos(S.ph),SP=Math.sin(S.ph),C=F.c,s=F.s,ox=F.ox,oy=F.oy;
+  function P(p){var dx=p[0]-C[0],dy=p[1]-C[1],dz=p[2]-C[2];return [ox+s*(dx*c-dy*sn),oy-s*(dz*CP+(dx*sn+dy*c)*SP)]}
+  function poly(a){return a.map(function(p){var q=P(p);return n1(q[0])+','+n1(q[1])}).join(' ')}
+  function ln(k,p,q){return '<line class="'+k+'" x1="'+n1(p[0])+'" y1="'+n1(p[1])+'" x2="'+n1(q[0])+'" y2="'+n1(q[1])+'"/>'}
+  function dot(k,p,r){return '<circle class="'+k+'" cx="'+n1(p[0])+'" cy="'+n1(p[1])+'" r="'+r+'"/>'}
+  function txt(k,x,y,str,an){var L=String(str).split('\n'),w=0;L.forEach(function(q){w=Math.max(w,q.length*6.9)});
+    if(an==='start')x=Math.max(6,Math.min(x,F.W-6-w));else if(an==='end')x=Math.min(F.W-6,Math.max(x,6+w));else x=Math.max(6+w/2,Math.min(x,F.W-6-w/2));
+    var t='<text class="lb'+(k?' '+k:'')+'" x="'+n1(x)+'" y="'+n1(y-(L.length-1)*15)+'" text-anchor="'+an+'">';
+    L.forEach(function(q,i){t+='<tspan x="'+n1(x)+'"'+(i?' dy="15"':'')+'>'+esc(q)+'</tspan>'});return t+'</text>'}
+  o.forEach(function(b){
+    faces(b,S.d).forEach(function(f){var m=(b.fm&&b.fm[f.k])||b.m,nx=f.n[0]*c-f.n[1]*sn,ny=f.n[0]*sn+f.n[1]*c;
+      var lit=(.30*nx-.35*ny+.88*f.n[2])/.994,k=(m==='cut'||m==='cutg')?100:Math.round(60+40*Math.max(0,Math.min(1,lit/.885)));
+      h+='<polygon class="f m-'+m+(b.e?' e':'')+'" style="--k:'+k+'%" points="'+poly(f.p)+'"/>'});
+    (b.deco||[]).forEach(function(dc){if(dc.n[0]*S.d[0]+dc.n[1]*S.d[1]+dc.n[2]*S.d[2]<.02)return;var dd='';
+      dc.l.forEach(function(l){var p=P(l[0]),q=P(l[1]);dd+='M'+n1(p[0])+' '+n1(p[1])+'L'+n1(q[0])+' '+n1(q[1])});
+      h+='<path class="dl" d="'+dd+'"/>'})});
+  F.ann.forEach(function(a){if(a.when&&!S.cut[a.when])return;var str=F.W<520&&a.sn?a.sn:a.s;
+    if(a.t==='dim'){var of=a.o||[0,0,0],A=P(add(a.a,of)),Q=P(add(a.b,of)),fr=a.f==null?.5:a.f;
+      if(of[0]||of[1]||of[2])h+=ln('dx',P(add(a.a,mul(of,.12))),P(add(a.a,mul(of,1.15))))+ln('dx',P(add(a.b,mul(of,.12))),P(add(a.b,mul(of,1.15))));
+      h+=ln('dm',A,Q)+dot('dt',A,2.6)+dot('dt',Q,2.6);
+      lab+=txt('',A[0]+(Q[0]-A[0])*fr+(a.lp?a.lp[0]:0),A[1]+(Q[1]-A[1])*fr+(a.lp?a.lp[1]:-8),str,a.an||'middle')}
+    else if(a.t==='call'){var p=P(a.p),q=P(a.q),an=a.an||'middle';
+      h+=ln('ld',p,q)+dot('lp',p,2.4);
+      lab+=txt('',q[0]+(an==='start'?6:an==='end'?-6:0),q[1]+(a.dy==null?(an==='middle'?-7:4):a.dy),str,an)}
+    else if(a.t==='line'){h+='<polyline class="'+a.cls+'" points="'+poly(a.pts)+'"/>'}
+    else if(a.t==='text'){var r=P(a.p);lab+=txt(a.cls,r[0],r[1],str,'middle')}});
+  F.svg.setAttribute('viewBox','0 0 '+F.W+' '+F.H);F.svg.style.height=F.H+'px';
+  F.svg.innerHTML=h+lab}
+
+/* ---------- DEWA substation drawings ---------- */
+function ghost(d){var y=-T/2,z1=FFL+d.h;return {t:'line',cls:'gh',when:'S',pts:[[d.x0,y,FFL],[d.x0,y,z1],[d.x1,y,z1],[d.x1,y,FFL]]}}
+function centre(d,y1){var m=(d.x0+d.x1)/2;return {t:'line',cls:'cn',pts:[[m,-T,FFL+.01],[m,y1,FFL+.01]]}}
+var VL={cut:1,pitch:34,yaw:35,wrap:1},VD={roof:1,pitch:20,yaw:24,min:-12,max:58};
+var HS=3.7;
+function singleRoom(){var W=7.2,D=4.57,cx=5.0,cy=D-.9-.85;
+  return build([{w:W,doors:[{c:cx,w:3.05,h:2.75,kind:'louvre'}],
+    it:function(x){return board(x+.5,D-.9,x+2.7,D-.1,FFL,1.9).concat(tx(x+cx,cy,2.2,1.7))}}],D,{H:HS,trench:[[0,D-.8,W,D]]})}
+function splitRooms(){var D=4.6,H=3;
+  return build([
+    {w:3,doors:[{c:1.5,w:2.44,h:2.75,kind:'louvre'}],it:function(x){return board(x+.4,D-.9,x+2.6,D-.1,FFL,1.9)}},
+    {w:4.57,doors:[{c:2.28,w:3.05,h:2.75,kind:'louvre'}],it:function(x){return tx(x+2.28,D-.9-.85,2.2,1.7)}}],D,{H:H,trench:[[0,D-.8,7.57,D]]})}
+function baseRoom(){var W=4.57,D=4.6;
+  return build([{w:W,doors:[{c:2.28,w:3.05,h:2.75,kind:'louvre'}],it:function(x){return tx(x+2.28,D-.9-.85,2.2,1.7)}}],D,{H:3})}
+function skyYard(){var W=6.1,D=6.1;
+  return build([{w:W,it:function(x){return board(x+.5,D-.9,x+2.7,D-.1,FFL,1.9).concat(tx(x+4.2,D-.9-.85,2.2,1.7))}}],D,{H:2.1,gf:3})}
+
+var DEF={
+ 's:room':function(){var M=singleRoom(),d=M.ops[0];return {M:M,v:VL,t:'Single room substation: size and height',
+   aria:'3D cutaway of a single room substation with RMU and transformer, minimum width 4.57 m and 3.7 m clear height',
+   cap:'RMU and transformer in the same ground floor room: 33 m² for one 1,000/1,500 kVA transformer with a minimum width of 4.57 m (55 m² and 6.1 m for two). Clear height not less than 3.7 m. The drawing shows 7.2 m × 4.57 m, which gives about 33 m².',
+   ann:[{t:'dim',a:[0,0,FFL],b:[7.2,0,FFL],o:[0,-T-.55,0],s:'≈ 7.2 m  (33 m² min.)',sn:'33 m²'},
+        {t:'dim',a:[0,0,FFL],b:[0,4.57,FFL],o:[-T-.55,0,0],s:'4.57 m min. width'},
+        {t:'dim',a:[7.2,4.57,FFL],b:[7.2,4.57,FFL+HS],s:'3.7 m clear height',lp:[9,4],an:'start'},
+        {t:'text',cls:'rn',p:[1.6,3,FFL],s:'RMU',sn:'RMU'},
+        centre(d,1.9),ghost(d)]}},
+ 's:door':function(){var M=singleRoom(),d=M.ops[0],top=M.top,m=(d.x0+d.x1)/2;
+   return {M:M,v:VD,t:'Louvred door and ventilation',
+   aria:'3D outside view of the transformer room louvre door, 3.05 m by 2.75 m',
+   cap:'Transformer room aluminium louvred door 3.05 m wide × 2.75 m high (RMU room: 2.44 m or 3.05 m × 2.75 m). Ground floor substations are naturally ventilated from at least two sides with louvred doors and fixed aluminium louvres 600 mm above outside ground.',
+   ann:[{t:'dim',a:[d.x0,-T-1.5,0],b:[d.x1,-T-1.5,0],o:[0,-.45,0],s:'3.05 m',lp:[0,17]},
+        {t:'dim',a:[d.x1,-T,FFL],b:[d.x1,-T,FFL+2.75],o:[.45,0,0],s:'2.75 m',lp:[8,4],an:'start'},
+        {t:'call',p:[m,-T,FFL+1.4],q:[m,-T,top+1.05],s:'Aluminium louvred door',sn:'Louvre door'},
+        centre(d,1.9)]}},
+ 's:levels':function(){return levelFigD(singleRoom(),7.2,4.57,HS,'Clear height and levels','Section through the room. Clear height not less than 3.7 m. Finished floor level 150 to 300 mm above the adjacent ground level (towards the door side). Cable trench clear depth 950 mm from the substation floor.',true)},
+ 'p:plan':function(){var M=splitRooms(),a=[{t:'text',cls:'rn',p:[1.5,1.4,FFL],s:'RMU ROOM',sn:'RMU'},{t:'text',cls:'rn',p:[5.28,1.4,FFL],s:'TRANSFORMER ROOM',sn:'TX'},
+     {t:'dim',a:[0,0,FFL],b:[3,0,FFL],o:[0,-T-.55,0],s:'3 m min. width',sn:'3 m'},
+     {t:'dim',a:[3.25,0,FFL],b:[7.82,0,FFL],o:[0,-T-.55,0],s:'4.57 m min. width',sn:'4.57 m'},
+     {t:'dim',a:[7.82,4.6,FFL],b:[7.82,4.6,FFL+3],s:'3 m clear height',lp:[9,4],an:'start'}];
+   return {M:M,v:{cut:1,pitch:34,yaw:28,wrap:1},t:'Split room substation: RMU room and transformer room',
+   aria:'3D cutaway of a split substation with a separate RMU room and transformer room',
+   cap:'RMU room: 9 m² for one RMU set controlling two transformers, minimum width 3 m towards the door side, +7 m² per additional RMU set. Transformer room: 21 m² and 4.57 m width for one 1,000/1,500 kVA transformer. RMU room clear height at least 3 m. Layout is indicative.',ann:a}},
+ 'b:room':function(){var M=baseRoom();return levelFigD(M,4.57,4.6,3,'Basement transformer room: size, level and ventilation','Transformer room in the first basement only: 21 m², minimum width 4.57 m for one 1,000/1,500 kVA transformer (42 m² and 6.1 m for two); clear height at least 3 m; floor 75 to 150 mm above the adjacent ground level; cable trench 500 mm below finished floor (DEWA approval). Mechanical ventilation sized for 55 °C maximum at 48 °C outside, total grill area 14.9 m² (1,000 kVA) or 18.6 m² (1,500 kVA).',false)},
+ 'o:yard':function(){var M=skyYard();return {M:M,v:VL,t:'Open to sky substation with private panel',
+   aria:'3D view of an open to sky substation yard, 6.1 m by 6.1 m with a compound wall not more than 2.1 m high',
+   cap:'Open to sky dedicated substation with private panel: 1 × 1,000/1,500 kVA transformer and 1 RMU in a 6.1 m × 6.1 m yard along the RTA/public road or sikka. Compound wall not more than 2.1 m. LV room adjacent to the substation. Soakaway at least 3.66 m away.',
+   ann:[{t:'dim',a:[0,0,FFL],b:[6.1,0,FFL],o:[0,-T-.55,0],s:'6.1 m'},
+        {t:'dim',a:[0,0,FFL],b:[0,6.1,FFL],o:[-T-.55,0,0],s:'6.1 m'},
+        {t:'dim',a:[6.1,0,FFL],b:[6.1,0,FFL+2.1],o:[.5,0,0],s:'≤ 2.1 m wall',lp:[8,4],an:'start'},
+        {t:'dim',a:[6.1+T,3.2,0],b:[6.1+T+3.66,3.2,0],o:[0,0,0],s:'soakaway ≥ 3.66 m',lp:[0,-8]},
+        {t:'text',cls:'rn',p:[3.05,3.2,FFL],s:'OPEN TO SKY',sn:'OPEN'}]}}
+};
+function levelFigD(M,W,D,H,title,cap,trench){
+  var ann=[{t:'dim',a:[W,.9,FFL],b:[W,.9,FFL+H],s:H+' m clear height',sn:H+' m',f:.82,lp:[9,4],an:'start'},
+    {t:'call',p:[W,-1.7,0],q:[W,-1.7,-1.25],s:'Adjacent ground 0.00',an:'end',dy:15},
+    {t:'call',p:[W,D*.45,FFL],q:[W,D*.45,-2.1],s:trench?'Room FFL +150 to +300 mm':'Room FFL +75 to +150 mm',dy:16}];
+  if(trench)ann.push({t:'dim',a:[W,D-.4,TRZ],b:[W,D-.4,FFL],s:'950 mm trench',lp:[-9,4],an:'end'});
+  return {M:M,v:{roof:1,clipX:W,pitch:15,yaw:-62,min:-80,max:-38},t:title,aria:'3D section through the room',cap:cap,ann:ann}}
+
+var RO=null,live=[];
+function mount(el,F){
+  el.innerHTML='<div class="fh"><span class="ft">'+esc(F.t)+'</span><span class="hint">Drag to turn</span><button class="btn" type="button">Reset view</button></div>'+
+    '<div class="stage" tabindex="0" role="img" aria-label="'+esc(F.aria).replace(/"/g,'&quot;')+'"><svg xmlns="http://www.w3.org/2000/svg"></svg></div><figcaption>'+esc(F.cap)+'</figcaption>';
+  var st=el.querySelector('.stage'),v=F.v,sx=null,sy=0,raf=0;
+  F.svg=st.querySelector('svg');F.yaw=v.yaw;F.el=el;
+  function clamp(){if(v.wrap){F.yaw=((F.yaw+180)%360+360)%360-180}else F.yaw=Math.max(v.min,Math.min(v.max,F.yaw))}
+  function paint(){if(raf)return;raf=requestAnimationFrame(function(){raf=0;draw(F)})}
+  st.addEventListener('pointerdown',function(e){sx=e.clientX;sy=F.yaw;try{st.setPointerCapture(e.pointerId)}catch(x){}});
+  st.addEventListener('pointermove',function(e){if(sx==null)return;F.yaw=sy+(e.clientX-sx)*.45;clamp();paint()});
+  ['pointerup','pointercancel'].forEach(function(k){st.addEventListener(k,function(){sx=null})});
+  st.addEventListener('keydown',function(e){if(e.key==='ArrowLeft'||e.key==='ArrowRight'){F.yaw+=e.key==='ArrowLeft'?-10:10;clamp();paint();e.preventDefault()}});
+  el.querySelector('.btn').addEventListener('click',function(){F.yaw=v.yaw;paint()});
+  fit(F,st.clientWidth||760);draw(F);live.push(F);if(RO)RO.observe(st)}
+function mountAll(root){
+  if(RO)RO.disconnect();live=[];
+  RO=window.ResizeObserver?new ResizeObserver(function(){live.forEach(function(F){var w=F.el.querySelector('.stage').clientWidth;if(w&&Math.abs(w-F.W)>1){fit(F,w);draw(F)}})}):null;
+  root.querySelectorAll('figure[data-f]').forEach(function(el){var k=el.getAttribute('data-f');if(DEF[k])mount(el,DEF[k]())})}
+function mountLV(el,label,size){live=live.filter(function(F){return F.el!==el});mount(el,lvFig(label,size))}
+return {mountAll:mountAll,mountLV:mountLV,has:function(k){return !!DEF[k]}}})();
+
+
+/* ================= checklist ================= */
+var S1=[
+ {h:"Room size and height",fig:"room",i:[
+  ["Room area is at least **33 m²** for 1 × 1,000/1,500 kVA, with minimum room width **4.57 m**","Table G.23"],
+  ["For 2 × 1,000/1,500 kVA: **55 m²**, minimum width **6.1 m**; add **25 m²** for each additional transformer; four or more transformers add **10 m²**","Table G.23"],
+  ["Clear height is not less than **3,700 mm**","G.7.2.3"],
+  ["No expansion joints in the room or on its ceiling","G.7.2.1"]]},
+ {h:"Door and ventilation",fig:"door",i:[
+  ["Transformer room louvred door **3.05 m × 2.75 m**; RMU room door **2.4 m or 3.05 m × 2.75 m**","G.7.6.2"],
+  ["Natural ventilation from **at least two sides** with aluminium louvred doors and fixed aluminium louvres","G.7.6.2"],
+  ["Fixed louvre window(s) are **600 mm** above outside ground level","G.7.6.2"],
+  ["Substation is **2 h fire rated**; exterior walls need not be unless there is a risk of exterior fire spread","G.7.6.1"],
+  ["At least one exit door swings in the direction of egress; **90 min** fire rated if in a 2 h wall","G.7.6.1"]]},
+ {h:"Levels and trench",fig:"levels",i:[
+  ["Floor level is **150 to 300 mm** above the adjacent ground level (towards the door side)","G.7.2.3"],
+  ["Cable trench has a clear depth of **950 mm** from the substation floor","G.7.8 / Table G.32"],
+  ["Cut-out at **950 mm** depth from outside level for HV cable entry","Table G.32"]]},
+ {h:"Location",i:[
+  ["Substation is in a **dedicated room or housing**","G.7.2.2"],
+  ["**LV electrical room is adjacent** to the substation if the main panel is private","G.7.2.2"],
+  ["No wet areas above the substation; if unavoidable, attic slab with **600 mm void**, waterproofing and drain pipe","G.7.2.2 / G.7.4"],
+  ["Pocket (self-contained) substations are **not** installed inside buildings or at petrol stations","G.7.2.1"]]}
+];
+var S2=[
+ {h:"RMU room (ground floor)",fig:"plan",i:[
+  ["One RMU set controlling two transformers: **9 m²**, minimum width **3 m** towards the door side","Table G.24"],
+  ["Additional RMU set: **7 m²** extra; four or more transformers: **10 m²**, minimum width **5 m**","Table G.24"],
+  ["RMU room clear height at least **3 m**","G.7.2.3"],
+  ["RMU door **2.4 m or 3.05 m × 2.75 m** louvred; room is **2 h fire rated**","G.7.6"]]},
+ {h:"Transformer room",i:[
+  ["Transformer room area follows the substation type tables (ground floor split rooms: Table G.25 – check the code)","Table G.25"],
+  ["Transformer room door **3.05 m × 2.75 m** louvred; natural ventilation from at least two sides","G.7.6.2"],
+  ["Floor level **150 to 300 mm** above adjacent ground (ground floor)","G.7.2.3"]]}
+];
+var S3=[
+ {h:"Basement substation: rooms",fig:"room",i:[
+  ["Transformer room is in the **first basement level only**","G.7.2.2"],
+  ["Transformer room: **21 m²**, min. width **4.57 m** for 1 × 1,000/1,500 kVA; **+21 m²** per extra transformer; 2 × : **42 m²**, **6.1 m**","Table G.27"],
+  ["RMU room on the ground floor: **9 m²**, min. width **3 m**; **+7 m²** per extra RMU set","Table G.26"],
+  ["Transformer room clear height at least **3 m**; floor **75 to 150 mm** above adjacent outside ground (door side)","G.7.2.3"]]},
+ {h:"Ventilation and fire",i:[
+  ["Independent **mechanical ventilation** for transformer rooms with no exterior walls; equipment accessed from the landlord side","G.7.6.3"],
+  ["Ventilation sized to keep the room at **55 °C max** with **48 °C** outside air; calculations provided","G.7.6.3"],
+  ["Louvres on two sides as back-up; total grill area **≥ 14.9 m²** (1,000 kVA) or **≥ 18.6 m²** (1,500 kVA)","G.7.6.3"],
+  ["Louvres protected by automatic **2 h fire rated shutters** or curtains on the landlord side, with **two combined fire/smoke detectors**","G.7.6.3"],
+  ["Transformer room is **2 h fire rated**","G.7.6.3"]]},
+ {h:"Transport and cable arrangement",i:[
+  ["Ramp: straight, minimum width **3 m**, clear height **3 m**, slope not more than **1:10**; no sloped curves or speed humps","Table G.31"],
+  ["Slab cut-out **3 m × 3 m** next to the main road; loading bay below; open to sky above or **7 m** clear height","Table G.31"],
+  ["Basement transformer room cable trench **500 mm** below finished floor (subject to DEWA approval)","Table G.32"],
+  ["Cable tray: **950 mm** clear from floor to tray bed, **450 mm** from slab to bed, **1.2 m** maintenance space on one side; not through closed rooms","Table G.32"],
+  ["Cable route RMU to transformer room straight; minimum bending radius **950 mm** where unavoidable","Table G.32"]]}
+];
+var S4=[
+ {h:"Open to sky: dedicated substation with private panel",fig:"yard",i:[
+  ["1 × 1,000/1,500 kVA transformer and 1 RMU in **6.1 m × 6.1 m**","Table G.28"],
+  ["Located along the RTA / public road or sikka; **LV room adjacent**","Table G.28"],
+  ["Soakaway at least **3.66 m** from the substation","Table G.28"],
+  ["Compound wall not more than **2.1 m**","Fig. G.45"]]},
+ {h:"Open to sky pocket substation",i:[
+  ["1 × 1,000 kVA: **4.57 m × 3.66 m**; 2 × 1,000 kVA: **6.1 m × 6.1 m**","Table G.29"],
+  ["Side of 4.57 m or 6.1 m faces the RTA/public/service road","G.7.5.5"],
+  ["Supplies through individual feeders, each **400 A maximum**","G.7.5.5"],
+  ["Wall around foundation (three sides) not more than **2,100 mm**; soakaway at least **3.66 m**","G.7.5.5"]]},
+ {h:"DEWA control room for direct 11 kV supply",i:[
+  ["Two feeders, RMU room of block work and RCC slab: **29.16 m² (5.4 × 5.4 m)**; **8 m²** per additional feeder","Table G.30"],
+  ["Or open to sky with FGRP kiosk supplied by DEWA: **37.2 m² (6.1 × 6.1 m)**; wall not more than **2.1 m**","Table G.30"]]}
+];
+var S5=[
+ {h:"Location and access",i:[
+  ["Substation / RMU room is directly on the **RTA / public road or sikka**","G.7.3"],
+  ["Sikka clear width at least **6.1 m**; at least **3 m** if the RMU room is less than **12 m** from the main road","G.7.3"],
+  ["DEWA staff and vehicle access from the plot limit, **open to sky and available 24/7**","G.7.3"],
+  ["Split / basement arrangement: transformer room on an internal driveway **3 m wide × 3 m high** with direct access from the RTA road","G.7.3"]]},
+ {h:"Earthing",i:[
+  ["Two or more interconnected earth pits for **transformer neutral**, effective resistance **< 2.0 Ω**","G.7.2.4"],
+  ["Two or more interconnected earth pits for **equipment body** earthing, **< 2.0 Ω**","G.7.2.4"],
+  ["Neutral earthing and body earthing are **not interconnected**","G.7.2.4"],
+  ["Earth strips on the trench wall, **50 mm** clear of the wall, with at least **four 12 mm holes**","G.7.2.4"],
+  ["Copper earth conductors **95 mm²** (**120 mm²** if longer than 50 m)","G.7.2.4"]]},
+ {h:"MV network and direct 11 kV",i:[
+  ["Private 11 kV switchgear rated at least **31.5 kA** symmetrical, **3 s**","G.7.1.4"],
+  ["Maximum sustained 11 kV feeder load **175 A / 3 MW** (300 mm² Cu XLPE); **160 A / 2.7 MW** (240 mm²)","G.7.1.3–G.7.1.4"],
+  ["Cable trench: maximum **20** cables in two layers; **150 mm** horizontal and **100 mm** vertical spacing; **2 m** from heat sources","G.7.1.7"],
+  ["Direct 11 kV (above 200 m towers): **cast resin transformers only**, losses **≤ 1.5%**, protection operates before DEWA protection","G.7.9"]]}
+];
+var MODES=[
+ {k:"s",n:"Single room",g:S1},
+ {k:"p",n:"Split rooms",g:S2},
+ {k:"b",n:"Basement",g:S3},
+ {k:"o",n:"Open to sky",g:S4},
+ {k:"g",n:"Access, earthing, MV",g:S5}];
+
+var cur="s", tabs=document.getElementById("tabs"), list=document.getElementById("list");
+function key(m,gi,ii){return "dewa:"+m+":"+gi+":"+ii}
+function get(k){try{return localStorage.getItem(k)==="1"}catch(e){return false}}
+function set(k,v){try{v?localStorage.setItem(k,"1"):localStorage.removeItem(k)}catch(e){}}
+function md(s){return s.replace(/\*\*([^*]+)\*\*/g,"<b>$1</b>")}
+function esc(s){return s.replace(/&/g,"&amp;").replace(/</g,"&lt;")}
+function render(){
+  var m=MODES.filter(function(x){return x.k===cur})[0], html="", tot=0, n=0, seen={};
+  tabs.innerHTML="";
+  MODES.forEach(function(x){
+    var b=document.createElement("button");b.className="tab";b.setAttribute("role","tab");
+    b.setAttribute("aria-selected",x.k===cur);b.textContent=x.n;
+    b.onclick=function(){cur=x.k;render()};tabs.appendChild(b)});
+  m.g.forEach(function(g,gi){
+    html+="<h2>"+esc(g.h)+"</h2>";
+    (g.fig||"").split(" ").forEach(function(f){var k=m.k+":"+f;
+      if(f&&F3.has(k)&&!seen[k]){seen[k]=1;html+='<figure class="fig3" data-f="'+k+'"></figure>'}});
+    html+='<div class="group">';
+    g.i.forEach(function(it,ii){
+      var k=key(m.k,gi,ii), d=get(k); tot++; if(d)n++;
+      html+='<label class="row'+(d?" done":"")+'"><input type="checkbox" data-k="'+k+'"'+(d?" checked":"")+'><span class="t">'+md(esc(it[0]))+'</span><span class="cl">'+(it[1]==="—"?"":it[1])+"</span></label>"});
+    html+="</div>"});
+  list.innerHTML=html; upd(tot,n);
+  F3.mountAll(list);
+  list.querySelectorAll("input").forEach(function(c){c.onchange=function(){
+    set(c.dataset.k,c.checked);c.parentNode.classList.toggle("done",c.checked);
+    var a=list.querySelectorAll("input"),dn=list.querySelectorAll("input:checked").length;upd(a.length,dn)}});
+}
+function upd(t,n){document.getElementById("count").textContent=n+" / "+t+" checked";
+  document.getElementById("fill").style.width=(t?n/t*100:0)+"%"}
+document.getElementById("reset").onclick=function(){
+  list.querySelectorAll("input").forEach(function(c){c.checked=false;set(c.dataset.k,false);c.parentNode.classList.remove("done")});
+  upd(list.querySelectorAll("input").length,0)};
+render();
+</script>
+
+</body></html>
